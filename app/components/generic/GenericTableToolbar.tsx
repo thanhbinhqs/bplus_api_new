@@ -11,10 +11,10 @@ import {
   FilterX,
   Clock
 } from 'lucide-react';
-import { GenericExportMenu } from './generic';
-import { type Column } from './generic';
+import { GenericExportMenu } from './GenericExportMenu';
+import { type Column } from './index';
 
-interface TableToolbarProps<T> {
+interface GenericTableToolbarProps<T> {
   data: T[];
   columns: Column<T>[];
   onRefresh?: () => void;
@@ -32,7 +32,7 @@ interface TableToolbarProps<T> {
   hasActiveFilters?: boolean;
 }
 
-export function TableToolbar<T extends Record<string, any>>({
+export function GenericTableToolbar<T extends Record<string, any>>({
   data,
   columns,
   onRefresh,
@@ -47,7 +47,7 @@ export function TableToolbar<T extends Record<string, any>>({
   isFilterCollapsed = false,
   onFilterToggle,
   hasActiveFilters = false
-}: TableToolbarProps<T>) {
+}: GenericTableToolbarProps<T>) {
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   
   // Current column visibility từ columns prop
@@ -153,7 +153,7 @@ export function TableToolbar<T extends Record<string, any>>({
           {showFilterToggle && (
             <button
               onClick={onFilterToggle}
-              className={`relative inline-flex items-center px-3 py-2 rounded-md border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm hover:shadow-md text-sm font-medium ${
+              className={`relative h-[40px] inline-flex items-center px-3 py-2 rounded-md border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm hover:shadow-md text-sm font-medium ${
                 isFilterCollapsed 
                   ? 'border-gray-300 hover:bg-gray-50 text-gray-600 bg-white' 
                   : 'border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-600'
@@ -182,7 +182,7 @@ export function TableToolbar<T extends Record<string, any>>({
           <button
             onClick={handleRefresh}
             disabled={loading}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
+            className="inline-flex h-[40px] items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
             title="Refresh data"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -193,14 +193,15 @@ export function TableToolbar<T extends Record<string, any>>({
           <div className="relative">
             <button
               onClick={() => setShowColumnSettings(!showColumnSettings)}
-              className={`relative inline-flex items-center px-2.5 py-1.5 border rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 ${
+              className={`sm:min-w-[96px] h-[40px] inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md ${
                 hasColumnChanges || hasPendingChanges
-                  ? 'border-orange-300 bg-orange-50 text-orange-700 hover:bg-orange-100 shadow-sm' 
-                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                  ? 'border-orange-300 bg-orange-50 text-orange-700 hover:bg-orange-100' 
+                  : ''
               }`}
               title="Column settings"
             >
               <Columns3 className="h-4 w-4" />
+              <span className="sm:ml-2 hidden sm:inline">Columns</span>
               {/* Indicator cho thay đổi */}
               {(hasColumnChanges || hasPendingChanges) && (
                 <div className={`absolute -top-1 -right-1 w-2 h-2 rounded-full border border-white ${

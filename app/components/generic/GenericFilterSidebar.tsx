@@ -98,12 +98,14 @@ export function GenericFilterSidebar({
       <div className={`
         ${showAsOverlay 
           ? 'fixed left-0 top-0 h-full z-50 lg:relative lg:z-auto transform transition-transform duration-300 ease-in-out' 
-          : 'relative'
-        }
-        ${showAsOverlay && isCollapsed ? '-translate-x-full lg:translate-x-0' : 'translate-x-0'}
-        w-64 md:w-72 lg:w-64 bg-white border-r border-gray-200 flex flex-col h-full shadow-lg lg:shadow-none
+          : isCollapsed ? 'hidden' : 'relative transition-all duration-300 ease-in-out'}
+        ${showAsOverlay ? (isCollapsed ? '-translate-x-full lg:translate-x-0' : 'translate-x-0') : ''}
+        ${showAsOverlay 
+          ? 'w-64 md:w-72 lg:w-64' 
+          : (!isCollapsed ? 'w-64 md:w-72 lg:w-64 border-r' : '')}
+        bg-white border-gray-200 flex flex-col h-full overflow-hidden shadow-lg lg:shadow-none
         ${className}
-      `}>
+      `} aria-hidden={!showAsOverlay && isCollapsed}>
         {/* Header */}
         <div className="px-3 py-4 border-b border-gray-200 flex items-center justify-between">
           <div className="flex items-center space-x-2">

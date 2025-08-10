@@ -1,11 +1,7 @@
 import { useState } from "react";
 import { Form, type ActionFunction, type LoaderFunction, redirect, useActionData, useNavigation, Link } from "react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import { Button } from "../components/ui/button";
-import { Checkbox } from "../components/ui/checkbox";
-import { LayoutAuth } from "../components/Layout";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Button, Checkbox } from "../components/ui";
+import { LayoutAuth } from "../components/layout";
 import { Eye, EyeOff, UserPlus, ArrowLeft } from "lucide-react";
 import { registerSchema } from "../lib/validations";
 import { validateFormData } from "../lib/utils";

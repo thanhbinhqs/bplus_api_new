@@ -1,11 +1,7 @@
 import { useState } from "react";
 import { Form, type ActionFunction, type LoaderFunction, redirect, useActionData, useNavigation, Link } from "react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import { Button } from "../components/ui/button";
-import { Checkbox } from "../components/ui/checkbox";
-import { LayoutAuth } from "../components/Layout";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Button, Checkbox } from "../components/ui";
+import { LayoutAuth } from "../components/layout";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { loginSchema } from "../lib/validations";
 import { validateFormData } from "../lib/utils";
@@ -26,16 +22,19 @@ export const action: ActionFunction = async ({ request }) => {
   const { username, password, rememberMe } = validation.data;
 
   try {
-    // TODO: Implement actual authentication logic
-    // For now, just simulate a login process
-    
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Mock authentication - in real app, call your API
-    if (username === "admin" && password === "password123") {
-      // TODO: Set session/cookies here
-      return redirect("/dashboard");
+    // Giả lập authentication với nhiều user khác nhau
+    let authToken = '';
+    let redirectUrl = '/dashboard';
+    
+    if (username === "admin" && password === "admin123") {
+      authToken = 'admin-token-123';
+    } else if (username === "editor" && password === "editor123") {
+      authToken = 'editor-token-456';
+    } else if (username === "user" && password === "user123") {
+      authToken = 'user-token-789';
     } else {
       return {
         success: false,
@@ -44,6 +43,13 @@ export const action: ActionFunction = async ({ request }) => {
         },
       };
     }
+
+    // Set cookie và redirect
+    const headers = new Headers();
+    const cookieExpiry = rememberMe ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000; // 7 days or 1 day
+    headers.append("Set-Cookie", `auth_token=${authToken}; HttpOnly; Path=/; Max-Age=${cookieExpiry / 1000}; SameSite=Lax`);
+    
+    return redirect(redirectUrl, { headers });
   } catch (error) {
     return {
       success: false,
@@ -71,6 +77,19 @@ export default function LoginPage() {
     <LayoutAuth>
       <div className="h-full flex items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
+        {/* Demo Login Info Card */}
+        <Card className="bg-blue-50 border-blue-200">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg text-blue-800">🎯 Demo Login</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm space-y-2">
+            <div><strong>Admin:</strong> admin / admin123</div>
+            <div><strong>Editor:</strong> editor / editor123</div>
+            <div><strong>User:</strong> user / user123</div>
+            <p className="text-xs text-blue-600 mt-2">Mỗi tài khoản sẽ có menu items khác nhau dựa trên quyền.</p>
+          </CardContent>
+        </Card>
+
         <Card className="shadow-lg">
           <CardHeader className="space-y-1 text-center">
             <CardTitle className="text-3xl font-bold">Đăng nhập</CardTitle>

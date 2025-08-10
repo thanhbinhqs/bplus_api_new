@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { GenericDataTable, type Column, SimplePagination } from "./generic";
-import type { User } from "../types/user";
+import { GenericDataTable, type Column, GenericPagination } from "../generic";
+import type { User } from "../../types/user";
 
 // Export the user columns for use in other components
 export const createUserColumns = (startIndex: number = 0): Column<User>[] => [
@@ -226,11 +226,12 @@ export function UserTable({
           emptyMessage="Không có người dùng nào"
           loading={loading}
           className="h-full"
+          storageKey="users-management:user-table"
         />
       </div>
       
       {enablePagination && totalItems > 0 && (
-        <SimplePagination
+        <GenericPagination
           currentPage={currentPage}
           totalPages={totalPages}
           totalItems={totalItems}

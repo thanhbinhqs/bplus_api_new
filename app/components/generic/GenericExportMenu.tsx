@@ -278,9 +278,9 @@ export function GenericExportMenu<T extends Record<string, any>>({
 
   return (
     <div className={`relative group ${className}`}>
-      <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-        <Download className="h-4 w-4 mr-2" />
-        {exportText}
+      <button className="h-[40px] inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        <Download className="h-4 w-4 sm:mr-2" />
+        <span className="hidden sm:inline">{exportText}</span>
       </button>
       
       {/* Dropdown Menu */}

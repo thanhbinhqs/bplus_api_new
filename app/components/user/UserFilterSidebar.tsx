@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { GenericFilterSidebar, type FilterSection, type SimpleSearchFilters } from './generic';
+import React from 'react';
+import { GenericFilterSidebar, type FilterSection, type SimpleSearchFilters } from '../generic';
 
 interface UserFilters {
   search: string;
@@ -45,7 +46,6 @@ export function UserFilterSidebar({
   // Track pending filters when Apply button is enabled
   const [pendingFilters, setPendingFilters] = useState<UserFilters>(() => {
     // Initialize with appliedFilters if in apply mode, otherwise with filters
-    console.log('Initial state setup:', { useApplyButton, appliedFilters, filters });
     return useApplyButton && appliedFilters ? appliedFilters : filters;
   });
 
@@ -59,11 +59,9 @@ export function UserFilterSidebar({
   // Sync pendingFilters with appliedFilters when they change (after successful apply)
   useEffect(() => {
     if (useApplyButton && appliedFilters) {
-      console.log('Syncing pending with applied:', appliedFilters);
       setPendingFilters(prev => {
         const shouldUpdate = JSON.stringify(prev) !== JSON.stringify(appliedFilters);
         if (shouldUpdate) {
-          console.log('Actually updating pending filters');
           return appliedFilters;
         }
         return prev;
@@ -102,7 +100,6 @@ export function UserFilterSidebar({
 
   // Apply pending filters
   const handleApplyFilters = () => {
-    console.log('Applying filters:', pendingFilters);
     onFilterChange(pendingFilters);
   };
 
@@ -110,13 +107,6 @@ export function UserFilterSidebar({
   const handlePendingFiltersChange = (filters: SimpleSearchFilters) => {
     setPendingFilters(filters as UserFilters);
   };
-
-  console.log('Filter states:', {
-    pendingFilters,
-    appliedFilters,
-    filters,
-    useApplyButton
-  });
 
   const currentFilters = useApplyButton ? pendingFilters : filters;
 

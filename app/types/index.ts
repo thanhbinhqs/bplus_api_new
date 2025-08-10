@@ -5,6 +5,9 @@
 // User types
 export * from './user';
 
+// Product types
+export * from './product';
+
 // Auth DTOs
 export * from './auth.dto';
 

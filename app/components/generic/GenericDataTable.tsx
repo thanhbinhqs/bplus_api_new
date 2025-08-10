@@ -147,7 +147,24 @@ interface DataTableProps<T> {
   selectedIds?: Set<string>;
   onSelectionChange?: (selectedIds: Set<string>) => void;
   getRowId?: (item: T) => string;
+  // Optional custom storage key for persisting widths
+  storageKey?: string;
 }
+
+
+// Helper function to save column settings to localStorage
+const saveColumnSettings = (key: string, columns: Column<any>[]) => {
+  const settings = columns.map(({ key, width, visible }) => ({ key, width, visible }));
+  console.log("Saving column settings:", settings); // Debug log
+  localStorage.setItem(key, JSON.stringify(settings));
+};
+
+// Helper function to load column settings from localStorage
+const loadColumnSettings = (key: string): Partial<Column<any>>[] => {
+  const settings = localStorage.getItem(key);
+  console.log("Loading column settings:", settings); // Debug log
+  return settings ? JSON.parse(settings) : [];
+};
 
 export function GenericDataTable<T extends Record<string, any>>({
   data,
@@ -161,7 +178,8 @@ export function GenericDataTable<T extends Record<string, any>>({
   className = "",
   rowClassName,
   emptyMessage = "Không có dữ liệu",
-  loading = false
+  loading = false,
+  storageKey: providedStorageKey
 }: DataTableProps<T>) {
   
   // Filter only visible columns
@@ -180,16 +198,68 @@ export function GenericDataTable<T extends Record<string, any>>({
   
   const tableRef = useRef<HTMLDivElement>(null);
   const columnsRef = useRef<Column<T>[]>(visibleColumns);
-  
+  // Lưu key và trạng thái hydrate widths
+  const tableStorageKeyRef = useRef<string | null>(null);
+  const widthsHydratedRef = useRef(false);
+
   // Set client flag after component mounts
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Tạo storage key theo route và danh sách cột khi ở client, sau đó khôi phục chiều rộng cột đã lưu
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Tạo key mặc định nếu không được truyền từ props
+    const defaultKey = `gdt:${window.location.pathname}:${visibleColumns.map(c => String(c.key)).join('|')}`;
+    const key = providedStorageKey || defaultKey;
+    tableStorageKeyRef.current = key;
+
+    // Khôi phục widths đã lưu
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const saved: Array<{ key: string; width: number }> = JSON.parse(raw);
+        const map = new Map(saved.map(s => [String(s.key), s.width]));
+        setColumns(prev => prev.map(col => {
+          const w = map.get(String(col.key));
+          return typeof w === 'number' && !Number.isNaN(w)
+            ? { ...col, width: Math.round(w), manuallyResized: true }
+            : col;
+        }));
+      }
+    } catch (e) {
+      console.warn('Failed to restore column widths:', e);
+    } finally {
+      widthsHydratedRef.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [providedStorageKey]);
+
+  // Lưu widths mỗi khi columns thay đổi (sau khi đã hydrate)
+  useEffect(() => {
+    if (!isClient || !widthsHydratedRef.current) return;
+    const key = tableStorageKeyRef.current;
+    if (!key) return;
+    try {
+      const payload = columns.map(c => ({ key: String(c.key), width: c.width }));
+      localStorage.setItem(key, JSON.stringify(payload));
+    } catch (e) {
+      console.warn('Failed to save column widths:', e);
+    }
+  }, [columns, isClient]);
   
   // Update columns when initialColumns change (for visibility changes)
   useEffect(() => {
     const newVisibleColumns = initialColumns.filter(col => col.visible !== false);
-    setColumns(newVisibleColumns);
+    // Preserve existing widths and manual resize flags when rebuilding from new columns
+    setColumns(prev => newVisibleColumns.map(newCol => {
+      const existing = prev.find(c => String(c.key) === String(newCol.key));
+      return existing
+        ? { ...newCol, width: existing.width, manuallyResized: existing.manuallyResized }
+        : newCol;
+    }));
   }, [initialColumns]);
   
   // Update columnsRef when columns change
@@ -463,13 +533,14 @@ export function GenericDataTable<T extends Record<string, any>>({
       <div className="flex-1 table-scroll">
         <div className="min-w-max">
           {/* Header */}
-          <div className="border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
+          <div className="border-b border-gray-200 bg-gray-50 sticky top-0 z-30">
             <div className="flex w-full">
               {columns.map((column, index) => {
                 const columnKey = String(column.key);
                 const stickyStyle = column.sticky && column.sticky !== 'none' ? {
                   position: 'sticky' as const,
                   [column.sticky]: `${stickyPositions[columnKey] || 0}px`,
+                  top: 0, // Đảm bảo header sticky luôn nằm trên cùng khi cuộn dọc
                   zIndex: column.sticky === 'left' ? 15 : 14,
                   backgroundColor: '#f9fafb'
                 } : {};

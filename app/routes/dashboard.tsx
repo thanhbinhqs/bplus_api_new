@@ -1,62 +1,93 @@
-import { Link } from "react-router";
-import { LayoutContainer } from "../components/Layout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
-import { Button } from "../components/ui/button";
+import { Link, useLoaderData } from "react-router";
+import { LayoutContainer } from "../components/layout";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button } from "../components/ui";
 import { 
   Users, 
   Settings, 
   BarChart3, 
   Activity,
   TestTube,
-  Home
+  Home,
+  Package
 } from "lucide-react";
+import { withAuth, type AuthContext } from "../lib/authMiddleware";
+
+export async function loader({ request }: { request: Request }) {
+  return withAuth(request, async (authContext: AuthContext) => {
+    // Bây giờ bạn có auth context với menu items attached
+    const stats = [
+      {
+        title: "Tổng số Users",
+        value: "300",
+        change: "+12%",
+        changeType: "positive" as const,
+        icon: "Users"
+      },
+      {
+        title: "Tổng số Sản phẩm",
+        value: "150",
+        change: "+8%",
+        changeType: "positive" as const,
+        icon: "Package"
+      },
+      {
+        title: "API Calls",
+        value: "1,234",
+        change: "+23%",
+        changeType: "positive" as const,
+        icon: "BarChart3"
+      },
+      {
+        title: "System Health",
+        value: "99.9%",
+        change: "0%",
+        changeType: "neutral" as const,
+        icon: "Settings"
+      }
+    ];
+
+    return {
+      authContext,
+      stats
+    };
+  });
+}
 
 export default function DashboardPage() {
-  const stats = [
-    {
-      title: "Tổng số Users",
-      value: "300",
-      change: "+12%",
-      changeType: "positive" as const,
-      icon: Users
-    },
-    {
-      title: "Hoạt động hôm nay",
-      value: "24",
-      change: "+5%",
-      changeType: "positive" as const,
-      icon: Activity
-    },
-    {
-      title: "API Calls",
-      value: "1,234",
-      change: "+23%",
-      changeType: "positive" as const,
-      icon: BarChart3
-    },
-    {
-      title: "System Health",
-      value: "99.9%",
-      change: "0%",
-      changeType: "neutral" as const,
-      icon: Settings
-    }
-  ];
+  const { authContext, stats } = useLoaderData<typeof loader>();
+  
+  // Hiển thị menu items từ auth context
+  console.log("User menu items:", authContext.menuItems);
+  console.log("User permissions:", authContext.userPermissions);
 
   const quickActions = [
     {
       title: "Quản lý Users",
-      description: "Xem, tìm kiếm và quản lý người dùng",
+      description: "Xem, tìm kiếm và quản lý người dùng (Original)",
       href: "/users-management",
       icon: Users,
       color: "bg-blue-500"
+    },
+    {
+      title: "Users Management v2",
+      description: "Demo TableDataLayout với full features",
+      href: "/users-management-v2",
+      icon: Users,
+      color: "bg-purple-500"
+    },
+    {
+      title: "Quản lý Sản phẩm",
+      description: "Quản lý sản phẩm với TableDataLayout",
+      href: "/products-management",
+      icon: Package,
+      color: "bg-indigo-500"
     },
     {
       title: "Test API",
       description: "Kiểm tra và test các endpoint API",
       href: "/api-test",
       icon: TestTube,
-      color: "bg-green-500"
+      color: "bg-orange-500"
     },
     {
       title: "Cài đặt",
@@ -81,7 +112,19 @@ export default function DashboardPage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, index) => {
-            const Icon = stat.icon;
+            // Map icon name to actual component
+            const getIcon = (iconName: string) => {
+              switch (iconName) {
+                case "Users": return Users;
+                case "Package": return Package;
+                case "Activity": return Activity;
+                case "BarChart3": return BarChart3;
+                case "Settings": return Settings;
+                default: return Users;
+              }
+            };
+            const IconComponent = getIcon(stat.icon);
+            
             return (
               <Card key={index}>
                 <CardContent className="p-6">
@@ -98,7 +141,7 @@ export default function DashboardPage() {
                       </p>
                     </div>
                     <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Icon className="h-6 w-6 text-gray-600" />
+                      <IconComponent className="h-6 w-6 text-gray-600" />
                     </div>
                   </div>
                 </CardContent>
@@ -146,28 +189,28 @@ export default function DashboardPage() {
             <div className="space-y-4">
               {[
                 {
-                  action: "Tạo user mới",
+                  action: "Tạo sản phẩm mới",
                   user: "Admin",
-                  time: "2 phút trước",
-                  details: "Đã tạo user 'nguyenvana' với role User"
+                  time: "5 phút trước",
+                  details: "Đã thêm sản phẩm 'iPhone 15 Pro Max' vào danh mục Điện tử"
                 },
                 {
-                  action: "API Test",
-                  user: "Tester",
+                  action: "Cập nhật tồn kho",
+                  user: "Manager",
+                  time: "10 phút trước",
+                  details: "Đã cập nhật tồn kho cho 15 sản phẩm"
+                },
+                {
+                  action: "Tạo user mới",
+                  user: "Admin",
                   time: "15 phút trước",
-                  details: "Đã test thành công Users API với 300 records"
+                  details: "Đã tạo user 'nguyenvana' với role User"
                 },
                 {
                   action: "Login",
                   user: "Admin",
                   time: "1 giờ trước",
                   details: "Đăng nhập thành công từ IP 192.168.1.1"
-                },
-                {
-                  action: "System Update",
-                  user: "System",
-                  time: "3 giờ trước",
-                  details: "Cập nhật mock data với 300 users"
                 }
               ].map((activity, index) => (
                 <div key={index} className="flex items-start space-x-3 pb-4 border-b border-gray-100 last:border-b-0">
@@ -192,7 +235,7 @@ export default function DashboardPage() {
             <CardTitle>Navigation nhanh</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
               <Link to="/" className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50">
                 <Home className="h-4 w-4" />
                 <span className="text-sm">Trang chủ</span>
@@ -200,6 +243,10 @@ export default function DashboardPage() {
               <Link to="/users-management" className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50">
                 <Users className="h-4 w-4" />
                 <span className="text-sm">Users</span>
+              </Link>
+              <Link to="/products-management" className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50">
+                <Package className="h-4 w-4" />
+                <span className="text-sm">Sản phẩm</span>
               </Link>
               <Link to="/api-test" className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50">
                 <TestTube className="h-4 w-4" />
@@ -212,6 +259,7 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+        
       </div>
     </LayoutContainer>
   );

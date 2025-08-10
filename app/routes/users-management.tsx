@@ -1,14 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { type LoaderFunction, type ActionFunction, useLoaderData, useActionData, useSearchParams, useSubmit } from "react-router";
 import { toast } from "sonner";
-import { LayoutFull } from "../components/Layout";
-import { UserFilterSidebar } from "../components/UserFilterSidebar";
-import { UserTable, createUserColumns } from "../components/UserTable";
-import { TableToolbar } from "../components/TableToolbar";
-import { UserContextMenu } from "../components/UserContextMenu";
-import { AnalyticsPanel } from "../components/AnalyticsPanel";
-import { ViewUserModal, EditUserModal, DeleteUserModal, ResetPasswordModal } from "../components/UserModals";
+import { LayoutFull } from "../components/layout";
+import { UserFilterSidebar, UserTable, createUserColumns, UserContextMenu, ViewUserModal, EditUserModal, DeleteUserModal, ResetPasswordModal } from "../components/user";
+import { GenericTableToolbar as TableToolbar } from "../components/generic";
 import type { User } from "../types/user";
+import { requireAuth } from "../lib/authMiddleware";
 
 // Simulate mock data directly in loader
 function generateMockUsers(): User[] {
@@ -69,6 +66,8 @@ interface ActionData {
 
 // Loader function - chạy trước khi render component
 export const loader: LoaderFunction = async ({ request }): Promise<LoaderData> => {
+  requireAuth(request);
+
   const url = new URL(request.url);
   const searchParams = url.searchParams;
   
@@ -304,20 +303,43 @@ export const action: ActionFunction = async ({ request }): Promise<ActionData> =
   }
 };
 
+// Helper function to save user settings to localStorage
+const saveUserSettings = (key: string, settings: any) => {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    localStorage.setItem(key, JSON.stringify(settings));
+  }
+};
+
+// Helper function to load user settings from localStorage
+const loadUserSettings = (key: string): any => {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    const settings = localStorage.getItem(key);
+    return settings ? JSON.parse(settings) : null;
+  }
+  return null;
+};
+
+// Helper function to compare two objects
+const isEqual = (obj1: any, obj2: any): boolean => {
+  return JSON.stringify(obj1) === JSON.stringify(obj2);
+};
+
 export default function UsersManagementPage() {
   const loaderData = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
   const [searchParams, setSearchParams] = useSearchParams();
   const submit = useSubmit();
 
+  const settingsKey = "users-management-settings";
+
   // Mobile detection hook
   const [isMobile, setIsMobile] = useState(false);
-  
+
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 1024); // lg breakpoint
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -325,7 +347,7 @@ export default function UsersManagementPage() {
 
   // Local state for UI - auto-collapse sidebar on mobile
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  
+
   // Auto-collapse sidebar on mobile
   useEffect(() => {
     if (isMobile) {
@@ -335,21 +357,41 @@ export default function UsersManagementPage() {
 
   // Track applied filters separately from URL filters for Apply button mode
   const [appliedFilters, setAppliedFilters] = useState(loaderData.filters);
-  
-  // Column visibility state
+
+  // Column visibility state - init empty, hydrate on client
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
-  
-  // Column sticky state
+  // Column sticky state - init empty, hydrate on client
   const [columnStickyState, setColumnStickyState] = useState<Record<string, 'left' | 'right' | 'none'>>({});
-  
+
+  // Hydration flag to avoid saving before we load from storage
+  const settingsHydratedRef = useRef(false);
+
+  // Hydrate settings from localStorage once on client
+  useEffect(() => {
+    const savedSettings = loadUserSettings(settingsKey);
+    if (savedSettings) {
+      setColumnVisibility(savedSettings.columnVisibility || {});
+      setColumnStickyState(savedSettings.columnStickyState || {});
+    }
+    settingsHydratedRef.current = true;
+  }, []);
+
+  // Save settings whenever column visibility or sticky state changes (after hydration)
+  useEffect(() => {
+    if (!settingsHydratedRef.current) return;
+    saveUserSettings(settingsKey, { columnVisibility, columnStickyState });
+  }, [columnVisibility, columnStickyState]);
+
   // Update applied filters when loader data changes (on first load or navigation)
   useEffect(() => {
     setAppliedFilters(loaderData.filters);
   }, [loaderData.filters]);
+
   const [contextMenu, setContextMenu] = useState<{
     user: User;
     position: { x: number; y: number };
   } | null>(null);
+  
   const [modals, setModals] = useState({
     view: null as User | null,
     edit: null as User | null,

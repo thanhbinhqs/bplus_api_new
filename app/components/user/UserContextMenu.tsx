@@ -9,8 +9,8 @@ import {
   RotateCcw,
   Copy
 } from "lucide-react";
-import { GenericContextMenu, type ContextMenuItem } from "./generic";
-import type { User } from "../types/user";
+import { GenericContextMenu, type ContextMenuItem } from "../generic";
+import type { User } from "../../types/user";
 
 interface UserContextMenuProps {
   user: User;

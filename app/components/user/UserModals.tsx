@@ -1,12 +1,8 @@
 import { useState } from "react";
 import { Form, useNavigation } from "react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Button } from "./ui/button";
-import { Checkbox } from "./ui/checkbox";
-import { X, Eye, EyeOff, Save, UserIcon, Mail, Settings, Trash2, RotateCcw, UserCheck } from "lucide-react";
-import type { User } from "../types/user";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Button, Checkbox } from "../ui";
+import { X, Eye, EyeOff, Save, Settings, Trash2, RotateCcw, UserCheck } from "lucide-react";
+import type { User } from "../../types/user";
 
 interface ModalProps {
   isOpen: boolean;

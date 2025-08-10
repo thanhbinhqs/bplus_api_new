@@ -23,9 +23,6 @@ export interface Role {
   name: string;
   description?: string;
   permissions?: string[];
-  color?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
 }
 
 
