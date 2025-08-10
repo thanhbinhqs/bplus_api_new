@@ -1,0 +1,37 @@
+{
+  // ✅ Chỉ auto-approve cho các tool/lệnh được whitelist
+  "chat.tools.autoApprove": true,
+
+  // 🎯 Whitelist các lệnh an toàn, block các lệnh nguy hiểm
+  "chat.tools.terminal.autoApprove": {
+    // Cho phép các lệnh git đọc trạng thái & commit/push
+    "git status": true,
+    "/^git (add|commit|push|pull)/": true,
+
+    // Cho phép chạy test & build
+    "npm test": true,
+    "npm run build": true,
+    "yarn test": true,
+    "yarn build": true,
+
+    // Cho phép cài dependencies (có thể tắt nếu team muốn kiểm soát)
+    "npm install": true,
+    "yarn install": true,
+
+    // ❌ Chặn các lệnh nguy hiểm (xóa file, sửa quyền, tải từ mạng)
+    "rm": false,
+    "/^rm\\s+/": false,
+    "del": false,
+    "chmod": false,
+    "chown": false,
+    "/^curl\\b/": false,
+    "/^wget\\b/": false,
+    "/^scp\\b/": false,
+    "/^ftp\\b/": false,
+
+    // ❌ Chặn lệnh thực thi shell nguy hiểm
+    "eval": false,
+    "bash": false,
+    "sh": false
+  }
+}
